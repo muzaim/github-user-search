@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import Modal from "./components/UserModal";
 import type { UserFollower, GitHubUser, Repo } from "./types/user";
+import { fetchGitHubUsers, fetchUserRepos, fetchUserDetails } from "./api/User";
 import { GrPrevious, GrNext } from "react-icons/gr";
-import axios from "axios";
+import Modal from "./components/UserModal";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 export default function App() {
 	const [query, setQuery] = useState("");
@@ -18,99 +20,53 @@ export default function App() {
 	const [page, setPage] = useState(1);
 	const [totalCount, setTotalCount] = useState(0);
 
-	const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
-	const GITHUB_URL = import.meta.env.VITE_GITHUB_URL;
+	const formik = useFormik({
+		initialValues: {
+			query: "",
+		},
+		validationSchema: Yup.object({
+			query: Yup.string().required("Search query is required"),
+		}),
+		onSubmit: (values) => {
+			setPage(1);
+			handleSearch(values.query, 1);
+		},
+	});
 
-	const fetchUserDetails = async (
-		username: string
-	): Promise<{ followers: number; following: number }> => {
-		try {
-			const res = await axios.get(`${GITHUB_URL}/users/${username}`, {
-				headers: {
-					Authorization: `${GITHUB_TOKEN}`,
-				},
-			});
-			return {
-				followers: res.data.followers,
-				following: res.data.following,
-			};
-		} catch {
-			return {
-				followers: 0,
-				following: 0,
-			};
-		}
+	// Contoh pemakaian:
+	const getUserDetails = async (username: string) => {
+		const details = await fetchUserDetails(username);
+		return details;
+	};
+
+	const handleSearch = async (query: string, page: number) => {
+		setLoadingUsers(true);
+		const { users, totalCount } = await fetchGitHubUsers(query, page);
+		setUsers(users);
+		setTotalCount(totalCount);
+		setLoadingUsers(false);
 	};
 
 	useEffect(() => {
-		if (query.trim() === "") {
-			setUsers([]);
-			setTotalCount(0);
-			setPage(1);
-			return;
+		if (formik.values.query.trim()) {
+			handleSearch(formik.values.query, page);
 		}
-
-		setLoadingUsers(true);
-
-		const timeoutId = setTimeout(() => {
-			axios
-				.get(`${GITHUB_URL}/search/users`, {
-					params: {
-						q: query,
-						per_page: 6,
-						page: page,
-					},
-					headers: {
-						Authorization: `${GITHUB_TOKEN}`,
-					},
-				})
-				.then((res) => {
-					setUsers(res.data.items || []);
-					setTotalCount(res.data.total_count || 0);
-					setLoadingUsers(false);
-				})
-				.catch(() => {
-					setUsers([]);
-					setTotalCount(0);
-					setLoadingUsers(false);
-				});
-		}, 500);
-
-		return () => clearTimeout(timeoutId);
-	}, [query, page]);
+	}, [page]);
 
 	const openModalWithRepos = async (username: string) => {
 		setSelectedUser(username);
 		setModalOpen(true);
 		setLoadingRepos(true);
 
-		try {
-			const res = await axios.get(
-				`${GITHUB_URL}/users/${username}/repos`,
-				{
-					headers: {
-						Authorization: `${GITHUB_TOKEN}`,
-					},
-				}
-			);
-			setRepos(res.data || []);
-		} catch (error) {
-			console.error("Failed to fetch repos:", error);
-			setRepos([]);
-		} finally {
-			setLoadingRepos(false);
-		}
+		const repos = await fetchUserRepos(username);
+		setRepos(repos);
+		setLoadingRepos(false);
 	};
 
 	const closeModal = () => {
 		setModalOpen(false);
 		setSelectedUser("");
 		setRepos([]);
-	};
-
-	const onQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setQuery(e.target.value);
-		setPage(1);
 	};
 
 	const totalPages = Math.ceil(totalCount / 5);
@@ -120,7 +76,7 @@ export default function App() {
 
 		users.forEach(async (user) => {
 			if (!userDetails[user.login]) {
-				const details = await fetchUserDetails(user.login);
+				const details = await getUserDetails(user.login);
 				setUserDetails((prev) => ({ ...prev, [user.login]: details }));
 			}
 		});
@@ -133,25 +89,52 @@ export default function App() {
 					GitHub User Search
 				</h1>
 
-				<div className="relative w-full">
-					<input
-						type="text"
-						value={query}
-						onChange={onQueryChange}
-						placeholder="Type to search..."
-						className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-					/>
-					{query && (
+				<form
+					onSubmit={formik.handleSubmit}
+					className="relative w-full flex flex-col gap-2"
+				>
+					<div className="relative w-full flex">
+						<input
+							type="text"
+							name="query"
+							value={formik.values.query}
+							onChange={formik.handleChange}
+							onBlur={formik.handleBlur}
+							placeholder="Type to search..."
+							className={`flex-1 px-4 py-2 rounded-l-lg bg-gray-700 text-white border ${
+								formik.touched.query && formik.errors.query
+									? "border-red-500"
+									: "border-gray-600"
+							} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+						/>
+
+						{formik.values.query && (
+							<button
+								onClick={() =>
+									formik.setFieldValue("query", "")
+								}
+								className="absolute right-[96px] top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200 hover:cursor-pointer z-10"
+								type="button"
+								aria-label="Clear search input"
+							>
+								&#x2715;
+							</button>
+						)}
+
 						<button
-							onClick={() => setQuery("")}
-							className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200 hover:cursor-pointer"
-							aria-label="Clear search input"
-							type="button"
+							type="submit"
+							className="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
 						>
-							&#x2715;
+							Search
 						</button>
+					</div>
+
+					{formik.touched.query && formik.errors.query && (
+						<p className="text-red-500 text-sm">
+							{formik.errors.query}
+						</p>
 					)}
-				</div>
+				</form>
 
 				<div className="mt-6 space-y-4">
 					{loadingUsers && (

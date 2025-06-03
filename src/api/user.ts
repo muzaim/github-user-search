@@ -1,20 +1,99 @@
 import axios from "axios";
+import { GITHUB_TOKEN, GITHUB_URL } from "./config";
 
-const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
-const GITHUB_URL = import.meta.env.VITE_GITHUB_URL;
+export interface GitHubUser {
+	id: number;
+	login: string;
+}
+
+interface GitHubUserSearchResponse {
+	items: GitHubUser[];
+	total_count: number;
+}
+
+export interface FetchGitHubUsersResult {
+	users: GitHubUser[];
+	totalCount: number;
+	error: unknown | null;
+}
+
+export const fetchGitHubUsers = async (
+	query: string,
+	page = 1
+): Promise<FetchGitHubUsersResult> => {
+	try {
+		const response = await axios.get<GitHubUserSearchResponse>(
+			`${GITHUB_URL}/search/users`,
+			{
+				params: {
+					q: query,
+					per_page: 6,
+					page,
+				},
+				headers: {
+					Authorization: GITHUB_TOKEN,
+				},
+			}
+		);
+
+		return {
+			users: response?.data?.items || [],
+			totalCount: response?.data?.total_count || 0,
+			error: null,
+		};
+	} catch (error) {
+		return {
+			users: [],
+			totalCount: 0,
+			error,
+		};
+	}
+};
+
+export interface GitHubRepo {
+	id: number;
+	name: string;
+}
+
+export const fetchUserRepos = async (
+	username: string
+): Promise<GitHubRepo[]> => {
+	try {
+		const res = await axios.get<GitHubRepo[]>(
+			`${GITHUB_URL}/users/${username}/repos`,
+			{
+				headers: {
+					Authorization: `${GITHUB_TOKEN}`,
+				},
+			}
+		);
+		return res.data || [];
+	} catch (error) {
+		console.error("Failed to fetch repos:", error);
+		return [];
+	}
+};
+
+export interface UserFollower {
+	followers: number;
+	following: number;
+}
 
 export const fetchUserDetails = async (
 	username: string
-): Promise<{ followers: number; following: number }> => {
+): Promise<UserFollower> => {
 	try {
-		const res = await axios.get(`${GITHUB_URL}/users/${username}`, {
-			headers: {
-				Authorization: `${GITHUB_TOKEN}`,
-			},
-		});
+		const res = await axios.get<UserFollower>(
+			`${GITHUB_URL}/users/${username}`,
+			{
+				headers: {
+					Authorization: `${GITHUB_TOKEN}`,
+				},
+			}
+		);
 		return {
-			followers: res.data.followers,
-			following: res.data.following,
+			followers: res?.data?.followers || 0,
+			following: res?.data?.following || 0,
 		};
 	} catch {
 		return {

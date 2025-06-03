@@ -1,13 +1,8 @@
-import { Config } from "jest";
+import type { Config } from "@jest/types";
 
-const config: Config = {
-	testEnvironment: "jsdom",
-	moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
-	transform: {
-		"^.+\\.(ts|tsx)$": "ts-jest",
-	},
-	setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
-	testPathIgnorePatterns: ["/node_modules/", "/dist/"],
+const config: Config.InitialOptions = {
+	preset: "ts-jest",
+	testEnvironment: "node",
 };
 
 export default config;
