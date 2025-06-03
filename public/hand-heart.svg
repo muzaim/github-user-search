@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- tangan kiri -->
+  <path d="M20 44c-4-4-8-8-8-12a6 6 0 0 1 12 0v12" fill="#f4a261" stroke="#e76f51"/>
+  <!-- tangan kanan -->
+  <path d="M44 44c4-4 8-8 8-12a6 6 0 0 0-12 0v12" fill="#f4a261" stroke="#e76f51"/>
+  <!-- jari tengah -->
+  <path d="M32 24v20" stroke="#e76f51"/>
+  <!-- hati kecil -->
+  <path d="M32 36c2-2 6-6 6-10a4 4 0 0 0-8 0c0 4 4 8 6 10z" fill="#e76f51"/>
+</svg>

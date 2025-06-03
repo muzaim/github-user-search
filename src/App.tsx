@@ -1,254 +1,335 @@
-import { useState, useEffect } from 'react';
-import Modal from './components/UserModal';
-import type { UserDetail, GitHubUser, Repo } from './types/user';
+import { useState, useEffect } from "react";
+import Modal from "./components/UserModal";
+import type { UserFollower, GitHubUser, Repo } from "./types/user";
+import { GrPrevious, GrNext } from "react-icons/gr";
+import axios from "axios";
 
 export default function App() {
-  const [query, setQuery] = useState('');
-  const [users, setUsers] = useState<GitHubUser[]>([]);
-  const [selectedUser, setSelectedUser] = useState<string>('');
-  const [repos, setRepos] = useState<Repo[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
-  const [loadingRepos, setLoadingRepos] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [userDetails, setUserDetails] = useState<Record<string, UserDetail>>({});
+	const [query, setQuery] = useState("");
+	const [users, setUsers] = useState<GitHubUser[]>([]);
+	const [selectedUser, setSelectedUser] = useState<string>("");
+	const [repos, setRepos] = useState<Repo[]>([]);
+	const [loadingUsers, setLoadingUsers] = useState(false);
+	const [loadingRepos, setLoadingRepos] = useState(false);
+	const [modalOpen, setModalOpen] = useState(false);
+	const [userDetails, setUserDetails] = useState<
+		Record<string, UserFollower>
+	>({});
+	const [page, setPage] = useState(1);
+	const [totalCount, setTotalCount] = useState(0);
 
-  const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
+	const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
+	const GITHUB_URL = import.meta.env.VITE_GITHUB_URL;
 
-  const fetchUserDetails = async (username: string) => {
-    try {
-      const res = await fetch(`https://api.github.com/users/${username}`, {
-        headers: {
-          Authorization: `token ${GITHUB_TOKEN}`,
-        },
-      });
-      const data = await res.json();
-      return {
-        followers: data.followers,
-        following: data.following,
-      };
-    } catch {
-      return {
-        followers: 0,
-        following: 0,
-      };
-    }
-  };
+	const fetchUserDetails = async (
+		username: string
+	): Promise<{ followers: number; following: number }> => {
+		try {
+			const res = await axios.get(`${GITHUB_URL}/users/${username}`, {
+				headers: {
+					Authorization: `${GITHUB_TOKEN}`,
+				},
+			});
+			return {
+				followers: res.data.followers,
+				following: res.data.following,
+			};
+		} catch {
+			return {
+				followers: 0,
+				following: 0,
+			};
+		}
+	};
 
-  useEffect(() => {
-    if (users.length === 0) return;
+	useEffect(() => {
+		if (query.trim() === "") {
+			setUsers([]);
+			setTotalCount(0);
+			setPage(1);
+			return;
+		}
 
-    users.forEach(async (user) => {
-      if (!userDetails[user.login]) {
-        const details = await fetchUserDetails(user.login);
-        setUserDetails(prev => ({ ...prev, [user.login]: details }));
-      }
-    });
-  }, [users]);
+		setLoadingUsers(true);
 
+		const timeoutId = setTimeout(() => {
+			axios
+				.get(`${GITHUB_URL}/search/users`, {
+					params: {
+						q: query,
+						per_page: 6,
+						page: page,
+					},
+					headers: {
+						Authorization: `${GITHUB_TOKEN}`,
+					},
+				})
+				.then((res) => {
+					setUsers(res.data.items || []);
+					setTotalCount(res.data.total_count || 0);
+					setLoadingUsers(false);
+				})
+				.catch(() => {
+					setUsers([]);
+					setTotalCount(0);
+					setLoadingUsers(false);
+				});
+		}, 500);
 
-  // Pagination state
-  const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
+		return () => clearTimeout(timeoutId);
+	}, [query, page]);
 
-  useEffect(() => {
-    if (query.trim() === '') {
-      setUsers([]);
-      setTotalCount(0);
-      setPage(1);
-      return;
-    }
+	const openModalWithRepos = async (username: string) => {
+		setSelectedUser(username);
+		setModalOpen(true);
+		setLoadingRepos(true);
 
-    setLoadingUsers(true);
+		try {
+			const res = await axios.get(
+				`${GITHUB_URL}/users/${username}/repos`,
+				{
+					headers: {
+						Authorization: `${GITHUB_TOKEN}`,
+					},
+				}
+			);
+			setRepos(res.data || []);
+		} catch (error) {
+			console.error("Failed to fetch repos:", error);
+			setRepos([]);
+		} finally {
+			setLoadingRepos(false);
+		}
+	};
 
-    const timeoutId = setTimeout(() => {
-      fetch(`https://api.github.com/search/users?q=${query}&per_page=6&page=${page}`, {
-        headers: {
-          Authorization: `token ${GITHUB_TOKEN}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setUsers(data.items || []);
-          setTotalCount(data.total_count || 0);
-          setLoadingUsers(false);
-        })
-        .catch(() => {
-          setUsers([]);
-          setTotalCount(0);
-          setLoadingUsers(false);
-        });
-    }, 500);
+	const closeModal = () => {
+		setModalOpen(false);
+		setSelectedUser("");
+		setRepos([]);
+	};
 
-    return () => clearTimeout(timeoutId);
-  }, [query, page]);
+	const onQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setQuery(e.target.value);
+		setPage(1);
+	};
 
-  const openModalWithRepos = (username: string) => {
-    setSelectedUser(username);
-    setModalOpen(true);
-    setLoadingRepos(true);
+	const totalPages = Math.ceil(totalCount / 5);
 
-    fetch(`https://api.github.com/users/${username}/repos`, {
-      headers: {
-        Authorization: `token ${GITHUB_TOKEN}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setRepos(data || []);
-        setLoadingRepos(false);
-      })
-      .catch(() => {
-        setRepos([]);
-        setLoadingRepos(false);
-      });
-  };
+	useEffect(() => {
+		if (users.length === 0) return;
 
-  const closeModal = () => {
-    setModalOpen(false);
-    setSelectedUser('');
-    setRepos([]);
-  };
+		users.forEach(async (user) => {
+			if (!userDetails[user.login]) {
+				const details = await fetchUserDetails(user.login);
+				setUserDetails((prev) => ({ ...prev, [user.login]: details }));
+			}
+		});
+	}, [users]);
 
-  // Reset page ketika query berubah
-  const onQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-    setPage(1);
-  };
+	return (
+		<div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
+			<div className="w-full max-w-3xl bg-gray-800 p-8 rounded-2xl shadow-xl">
+				<h1 className="text-2xl font-semibold mb-6 text-center">
+					GitHub User Search
+				</h1>
 
-  const totalPages = Math.ceil(totalCount / 5);
+				<div className="relative w-full">
+					<input
+						type="text"
+						value={query}
+						onChange={onQueryChange}
+						placeholder="Type to search..."
+						className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+					/>
+					{query && (
+						<button
+							onClick={() => setQuery("")}
+							className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200 hover:cursor-pointer"
+							aria-label="Clear search input"
+							type="button"
+						>
+							&#x2715;
+						</button>
+					)}
+				</div>
 
-  return (
-    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-3xl bg-gray-800 p-8 rounded-2xl shadow-xl">
-        <h1 className="text-2xl font-semibold mb-6 text-center">GitHub User Search</h1>
+				<div className="mt-6 space-y-4">
+					{loadingUsers && (
+						<div
+							role="status"
+							className="flex items-center justify-center"
+						>
+							<svg
+								aria-hidden="true"
+								className="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+								viewBox="0 0 100 101"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+									fill="currentColor"
+								/>
+								<path
+									d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+									fill="currentFill"
+								/>
+							</svg>
+							<span className="sr-only">Loading...</span>
+						</div>
+					)}
 
-        <div className="relative w-full">
-          <input
-            type="text"
-            value={query}
-            onChange={onQueryChange}
-            placeholder="Type to search`..."
-            className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {query && (
-            <button
-              onClick={() => setQuery('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200 hover:cursor-pointer"
-              aria-label="Clear search input"
-              type="button"
-            >
-              &#x2715;
-            </button>
-          )}
-        </div>
+					{!loadingUsers && users.length > 0 && (
+						<>
+							<ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+								{users.map((user) => {
+									const details = userDetails[user.login] || {
+										followers: 0,
+										following: 0,
+									};
 
+									return (
+										<li
+											key={user.id}
+											onClick={() =>
+												openModalWithRepos(user.login)
+											}
+											className="bg-gradient-to-br from-gray-800 to-gray-700 rounded-xl p-6 cursor-pointer shadow-lg border border-gray-600 hover:scale-[1.02] transition transform duration-300"
+										>
+											<div className="flex flex-col items-center text-center">
+												<img
+													src={user.avatar_url}
+													alt={user.login}
+													className="w-24 h-24 rounded-full border-4 border-white shadow-md"
+												/>
+												<h3 className="mt-4 text-xl font-semibold text-white">
+													{user.login} {user.company}
+												</h3>
 
-        <div className="mt-6 space-y-4">
-          {loadingUsers && <p className="text-center text-gray-400">Loading users...</p>}
+												<div className="flex justify-center gap-6 mt-3 text-sm text-gray-300">
+													<div className="flex flex-col items-center">
+														<span className="font-bold text-white">
+															{details.followers}
+														</span>
+														<span className="text-xs">
+															Followers
+														</span>
+													</div>
+													<div className="flex flex-col items-center">
+														<span className="font-bold text-white">
+															{details.following}
+														</span>
+														<span className="text-xs">
+															Following
+														</span>
+													</div>
+												</div>
 
-          {!loadingUsers && users.length > 0 && (
-            <>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {users.map((user) => {
-                  const details = userDetails[user.login] || { followers: 0, following: 0 };
+												<button className="mt-4 px-4 py-1 rounded-full bg-blue-500 text-white text-sm hover:bg-blue-600 transition">
+													View Repos
+												</button>
+											</div>
+										</li>
+									);
+								})}
+							</ul>
 
-                  return (
-                    <li
-                      key={user.id}
-                      onClick={() => openModalWithRepos(user.login)}
-                      className="bg-gradient-to-br from-gray-800 to-gray-700 rounded-xl p-6 cursor-pointer shadow-lg border border-gray-600 hover:scale-[1.02] transition transform duration-300"
-                    >
-                      <div className="flex flex-col items-center text-center">
-                        <img
-                          src={user.avatar_url}
-                          alt={user.login}
-                          className="w-24 h-24 rounded-full border-4 border-white shadow-md"
-                        />
-                        <h3 className="mt-4 text-xl font-semibold text-white">{user.login}</h3>
+							{/* Pagination Controls */}
+							<div className="flex justify-center gap-4 mt-6">
+								<button
+									onClick={() =>
+										setPage((p) => Math.max(p - 1, 1))
+									}
+									disabled={page === 1}
+									className={`px-4 py-2 rounded bg-blue-600 cursor-pointer hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed`}
+								>
+									<GrPrevious />
+								</button>
 
-                        <div className="flex justify-center gap-6 mt-3 text-sm text-gray-300">
-                          <div className="flex flex-col items-center">
-                            <span className="font-bold text-white">{details.followers}</span>
-                            <span className="text-xs">Followers</span>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <span className="font-bold text-white">{details.following}</span>
-                            <span className="text-xs">Following</span>
-                          </div>
-                        </div>
+								<span className="flex items-center text-gray-300">
+									Page {page} of {totalPages || 1}
+								</span>
 
-                        <button className="mt-4 px-4 py-1 rounded-full bg-blue-500 text-white text-sm hover:bg-blue-600 transition">
-                          View Repos
-                        </button>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+								<button
+									onClick={() =>
+										setPage((p) =>
+											p < totalPages ? p + 1 : p
+										)
+									}
+									disabled={
+										page === totalPages || totalPages === 0
+									}
+									className={`px-4 py-2 rounded bg-blue-600 cursor-pointer hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed`}
+								>
+									<GrNext />
+								</button>
+							</div>
+						</>
+					)}
 
+					{!loadingUsers && query && users.length === 0 && (
+						<p className="text-gray-400 text-center mt-4">
+							No results for "<strong>{query}</strong>"
+						</p>
+					)}
+				</div>
 
-
-              {/* Pagination Controls */}
-              <div className="flex justify-center gap-4 mt-6">
-                <button
-                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
-                  disabled={page === 1}
-                  className={`px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed`}
-                >
-                  Previous
-                </button>
-
-                <span className="flex items-center text-gray-300">
-                  Page {page} of {totalPages || 1}
-                </span>
-
-                <button
-                  onClick={() => setPage((p) => (p < totalPages ? p + 1 : p))}
-                  disabled={page === totalPages || totalPages === 0}
-                  className={`px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed`}
-                >
-                  Next
-                </button>
-              </div>
-            </>
-          )}
-
-          {!loadingUsers && query && users.length === 0 && (
-            <p className="text-gray-400 text-center mt-4">
-              No results for "<strong>{query}</strong>"
-            </p>
-          )}
-        </div>
-
-        <Modal show={modalOpen} onClose={closeModal} title={`Repositori ${selectedUser}`}>
-          {loadingRepos ? (
-            <p className="text-center text-gray-400">Loading repos...</p>
-          ) : repos.length > 0 ? (
-            <ul className="space-y-2">
-              {repos.map((repo) => (
-                <li
-                  key={repo.id}
-                  className="bg-gray-700 p-3 rounded-md border border-gray-600"
-                >
-                  <a
-                    href={repo.html_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline font-medium"
-                  >
-                    {repo.name}
-                  </a>
-                  <p className="text-sm text-gray-400">
-                    {repo.description || 'No description'}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-center text-gray-400">Tidak ada repositori ditemukan.</p>
-          )}
-        </Modal>
-      </div>
-    </div>
-  );
+				<Modal
+					show={modalOpen}
+					username={selectedUser}
+					onClose={closeModal}
+				>
+					{loadingRepos ? (
+						<div
+							role="status"
+							className="flex items-center justify-center"
+						>
+							<svg
+								aria-hidden="true"
+								className="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+								viewBox="0 0 100 101"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+									fill="currentColor"
+								/>
+								<path
+									d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+									fill="currentFill"
+								/>
+							</svg>
+							<span className="sr-only">Loading...</span>
+						</div>
+					) : repos.length > 0 ? (
+						<ul className="space-y-2">
+							{repos.map((repo) => (
+								<li
+									key={repo.id}
+									className="bg-gray-700 p-3 rounded-md border border-gray-600"
+								>
+									<a
+										href={repo.html_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="text-blue-400 hover:underline font-medium"
+									>
+										{repo.name}
+									</a>
+									<p className="text-sm text-gray-400">
+										{repo.description || "No description"}
+									</p>
+								</li>
+							))}
+						</ul>
+					) : (
+						<p className="text-center text-gray-400">
+							No repos found
+						</p>
+					)}
+				</Modal>
+			</div>
+		</div>
+	);
 }
