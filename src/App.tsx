@@ -60,7 +60,6 @@ export default function App() {
 
     setLoadingUsers(true);
 
-    // Cancel debounce if user types fast
     const timeoutId = setTimeout(() => {
       fetch(`https://api.github.com/search/users?q=${query}&per_page=6&page=${page}`, {
         headers: {
