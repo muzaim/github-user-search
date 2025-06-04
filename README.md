@@ -41,10 +41,13 @@ This project is a GitHub User Search application built with React and Vite. It a
 2. Navigate to the project directory:
    ```bash
    cd github-user-search
-3. Install dependencies:
+3. Config .env file
+   ```bash
+   Add your Github Secret Key to VITE_GITHUB_TOKEN variable
+4. Install dependencies:
    ```bash
    npm install
-4. Run the development server:
+5. Run the development server:
    ```bash
    npm run dev
 
