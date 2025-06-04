@@ -43,7 +43,7 @@ export const fetchGitHubUsers = async (
 export const fetchUserRepos = async (username: string): Promise<Repo[]> => {
 	try {
 		const res = await axios.get<Repo[]>(
-			`${GITHUB_URL}/users/${username}/repos`,
+			`${GITHUB_URL}/users/${username}/repos?sort=updated&direction=desc`,
 			{
 				headers: {
 					Authorization: `${GITHUB_TOKEN}`,

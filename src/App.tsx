@@ -5,6 +5,10 @@ import { GrPrevious, GrNext } from "react-icons/gr";
 import Modal from "./components/UserModal";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { IoLogOutOutline } from "react-icons/io5";
+import { GoRepoForked } from "react-icons/go";
+import { CiStar } from "react-icons/ci";
+import { CiClock1 } from "react-icons/ci";
 
 export default function App() {
 	const [query] = useState("");
@@ -39,6 +43,39 @@ export default function App() {
 		return details;
 	};
 
+	const getLanguageColor = (language: string | null): string => {
+		if (!language) return "language-gray";
+
+		const normalizedLang = language.toLowerCase();
+		const languageClass = `language-${normalizedLang}`;
+
+		// Check if we have a specific class for this language
+		const validClasses = [
+			"language-javascript",
+			"language-typescript",
+			"language-python",
+			"language-java",
+			"language-html",
+			"language-css",
+			"language-ruby",
+			"language-go",
+			"language-rust",
+			"language-php",
+			"language-c",
+			"language-csharp",
+			"language-cpp",
+			"language-shell",
+			"language-swift",
+			"language-kotlin",
+			"language-dart",
+			"language-vue",
+		];
+
+		return validClasses.includes(languageClass)
+			? languageClass
+			: "language-gray";
+	};
+
 	const handleSearch = async (query: string, page: number) => {
 		setLoadingUsers(true);
 		const { users, totalCount } = await fetchGitHubUsers(query, page);
@@ -59,6 +96,7 @@ export default function App() {
 		setLoadingRepos(true);
 
 		const repos = await fetchUserRepos(username);
+		console.log(`dandi`, repos);
 		setRepos(repos);
 		setLoadingRepos(false);
 	};
@@ -212,7 +250,7 @@ export default function App() {
 												</div>
 
 												<button className="mt-4 px-4 py-1 rounded-full bg-blue-500 text-white text-sm hover:bg-blue-600 transition">
-													View Repos
+													View Profile
 												</button>
 											</div>
 										</li>
@@ -289,26 +327,76 @@ export default function App() {
 							<span className="sr-only">Loading...</span>
 						</div>
 					) : repos.length > 0 ? (
-						<ul className="space-y-2">
-							{repos.map((repo) => (
-								<li
-									key={repo.id}
-									className="bg-gray-700 p-3 rounded-md border border-gray-600"
-								>
-									<a
-										href={repo.html_url}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="text-blue-400 hover:underline font-medium"
+						<>
+							<ul className="space-y-2">
+								{repos.map((repo) => (
+									<li
+										key={repo.id}
+										className="bg-gray-800 border border-gray-700 rounded-lg p-5 hover:shadow transition-shadow duration-200"
 									>
-										{repo.name}
-									</a>
-									<p className="text-sm text-gray-400">
-										{repo.description || "No description"}
-									</p>
-								</li>
-							))}
-						</ul>
+										<div className="flex items-center justify-between flex-wrap gap-2">
+											<a
+												href={repo.html_url}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="text-blue-400 hover:underline font-semibold text-lg flex items-center gap-1"
+											>
+												{repo.name}
+												<IoLogOutOutline className="text-blue-400 w-4 h-4" />
+											</a>
+
+											<div className="flex items-center gap-3">
+												<div className="flex items-center text-sm bg-gray-700 text-yellow-300 px-2 py-1 rounded-md">
+													<CiStar className="w-4 h-4 mr-1" />
+													<span className="text-white">
+														{repo.stargazers_count}
+													</span>
+												</div>
+
+												<div className="flex items-center text-sm bg-gray-700 text-gray-300 px-2 py-1 rounded-md">
+													<GoRepoForked className="w-4 h-4 mr-1" />
+													<span className="text-white">
+														{repo.forks_count}
+													</span>
+												</div>
+											</div>
+										</div>
+
+										{repo.language && (
+											<div className="flex items-center justify-between mt-4 text-sm text-gray-400 flex-wrap gap-2">
+												<div className="flex items-center gap-2">
+													<span
+														className={`w-3 h-3 rounded-full ${getLanguageColor(
+															repo.language
+														)}`}
+													></span>
+													<span className="text-white">
+														{repo.language}
+													</span>
+												</div>
+
+												<div className="flex items-center gap-1">
+													<CiClock1 className="w-4 h-4 text-gray-400" />
+													<span>
+														Updated{" "}
+														{new Date(
+															repo.updated_at
+														).toLocaleDateString(
+															undefined,
+															{
+																year: "numeric",
+																month: "short",
+																day: "numeric",
+															}
+														)}
+													</span>
+												</div>
+											</div>
+										)}
+									</li>
+								))}
+							</ul>
+						</>
 					) : (
 						<p className="text-center text-gray-400">
 							No repos found

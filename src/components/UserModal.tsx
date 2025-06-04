@@ -62,8 +62,9 @@ export default function Modal({
 								/>
 								<div className="flex flex-col gap-1">
 									<h3 className="text-lg font-semibold text-white">
-										{profile.name || profile.login}
+										{profile.name || profile.login}{" "}
 									</h3>
+								
 									<div className="flex items-center gap-1 text-sm text-gray-400">
 										<FaRegBuilding className="text-base" />
 										{profile.company || "No company info"}
