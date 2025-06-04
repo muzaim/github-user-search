@@ -37,10 +37,10 @@ This project is a GitHub User Search application built with React and Vite. It a
 
 1. Clone the repository:  
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/muzaim/github-user-search.git
 2. Navigate to the project directory:
    ```bash
-   cd <project-directory>
+   cd github-user-search
 3. Install dependencies:
    ```bash
    npm install
