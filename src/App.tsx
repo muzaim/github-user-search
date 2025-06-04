@@ -25,7 +25,7 @@ export default function App() {
 			query: "",
 		},
 		validationSchema: Yup.object({
-			query: Yup.string().required("Search query is required"),
+			query: Yup.string().required("Github username is required!"),
 		}),
 		onSubmit: (values) => {
 			setPage(1);
