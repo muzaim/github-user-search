@@ -20,6 +20,7 @@ export type Repo = {
 	stargazers_count: number;
 	forks_count: number;
 	updated_at: string;
+	visibility: string;
 };
 
 export type UserDetail = {

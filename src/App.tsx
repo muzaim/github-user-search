@@ -8,7 +8,6 @@ import * as Yup from "yup";
 import { GoRepoForked } from "react-icons/go";
 import { CiStar } from "react-icons/ci";
 import { CiClock1 } from "react-icons/ci";
-import { FaExternalLinkAlt } from "react-icons/fa";
 
 
 export default function App() {
@@ -332,15 +331,25 @@ export default function App() {
 										className="bg-gray-800 border border-gray-700 rounded-lg p-5 hover:shadow transition-shadow duration-200"
 									>
 										<div className="flex items-center justify-between flex-wrap gap-2">
-											<a
-												href={repo.html_url}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="text-blue-400 hover:underline font-semibold text-lg flex items-center gap-1"
-											>
-												{repo.name}
-												<FaExternalLinkAlt className="text-blue-400 w-3 h-3" />
-											</a>
+											<div className="flex items-center gap-2">
+												<a
+													href={repo.html_url}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="text-blue-400 hover:underline font-semibold text-lg flex items-center gap-1"
+												>
+													{repo.name}
+												</a>
+												<span
+													className={`px-2 py-0.5 text-gray-700 text-xs font-semibold rounded-full capitalize ${repo.visibility === 'public'
+														? 'bg-green-100 '
+														: 'bg-gray-200'
+														}`}
+												>
+													{repo.visibility}
+												</span>
+
+											</div>
 
 											<div className="flex items-center gap-3">
 												<div className="flex items-center text-sm bg-gray-700 text-yellow-300 px-2 py-1 rounded-md">
