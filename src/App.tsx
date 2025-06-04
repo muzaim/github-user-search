@@ -110,12 +110,14 @@ export default function App() {
 
 						{formik.values.query && (
 							<button
-								onClick={() =>
-									formik.setFieldValue("query", "")
-								}
-								className="absolute right-[96px] top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200 hover:cursor-pointer z-10"
 								type="button"
 								aria-label="Clear search input"
+								className="absolute right-[96px] top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200 cursor-pointer z-10"
+								onClick={(e) => {
+									e.preventDefault();
+									formik.setFieldValue("query", "");
+									setUsers([]);
+								}}
 							>
 								&#x2715;
 							</button>
