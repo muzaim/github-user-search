@@ -116,6 +116,7 @@ export default function App() {
 								onClick={(e) => {
 									e.preventDefault();
 									formik.setFieldValue("query", "");
+									formik.setTouched({ query: false });
 									setUsers([]);
 								}}
 							>
