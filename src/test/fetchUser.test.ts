@@ -1,5 +1,5 @@
 import axios from "axios";
-import { fetchGitHubUsers } from "./User";
+import { fetchGitHubUsers } from "../api/User";
 
 jest.mock("axios");
 
