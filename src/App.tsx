@@ -341,13 +341,14 @@ export default function App() {
 													{repo.name}
 												</a>
 												<span
-													className={`px-2 py-0.5 text-gray-700 text-xs font-semibold rounded-full capitalize ${repo.visibility === 'public'
-														? 'bg-green-100 '
-														: 'bg-gray-200'
+													className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full border ${repo.visibility === 'public'
+															? 'bg-white text-gray-700 border-gray-300'
+															: 'bg-gray-100 text-gray-600 border-gray-300'
 														}`}
 												>
-													{repo.visibility}
+													{repo.visibility.charAt(0).toUpperCase() + repo.visibility.slice(1)}
 												</span>
+
 
 											</div>
 

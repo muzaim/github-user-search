@@ -4,7 +4,7 @@ import { CiLocationOn } from "react-icons/ci";
 import { FaRegBuilding } from "react-icons/fa";
 import { IoIosLink } from "react-icons/io";
 import type { UserDetail } from "../types/user";
-
+import { fetchUserProfile } from '../api/user'
 type ModalProps = {
 	show: boolean;
 	onClose: () => void;
@@ -21,11 +21,17 @@ export default function Modal({
 	const [profile, setProfile] = useState<UserDetail | null>(null);
 
 	useEffect(() => {
+		const getProfile = async () => {
+			try {
+				const data = await fetchUserProfile(username);
+				setProfile(data);
+			} catch (error) {
+				console.error("Failed to load profile", error);
+			}
+		};
+
 		if (show) {
-			fetch("https://api.github.com/users/" + username)
-				.then((res) => res.json())
-				.then((data) => setProfile(data))
-				.catch((err) => console.error("Error fetching profile:", err));
+			getProfile();
 		}
 	}, [show]);
 
@@ -33,16 +39,13 @@ export default function Modal({
 
 	return (
 		<>
-			{/* Backdrop */}
 			<div
 				className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm z-40"
 				onClick={onClose}
 			></div>
 
-			{/* Modal Content */}
 			<div className="fixed inset-0 flex items-center justify-center z-50 p-4">
 				<div className="bg-gray-800 rounded-lg max-w-2xl w-full p-6 relative shadow-xl">
-					{/* Close Button */}
 					<button
 						onClick={onClose}
 						className="absolute top-4 right-4 text-gray-400 hover:text-white focus:outline-none cursor-pointer"
@@ -51,7 +54,6 @@ export default function Modal({
 						✕
 					</button>
 
-					{/* Profile Header */}
 					{profile ? (
 						<div className="">
 							<div className="flex gap-1">
@@ -64,7 +66,7 @@ export default function Modal({
 									<h3 className="text-lg font-semibold text-white">
 										{profile.name || profile.login}{" "}
 									</h3>
-								
+
 									<div className="flex items-center gap-1 text-sm text-gray-400">
 										<FaRegBuilding className="text-base" />
 										{profile.company || "No company info"}
@@ -100,7 +102,6 @@ export default function Modal({
 						<p className="text-white mb-4">Loading profile...</p>
 					)}
 
-					{/* Modal Children */}
 					<div className="max-h-96 overflow-y-auto">{children}</div>
 				</div>
 			</div>

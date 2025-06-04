@@ -5,6 +5,7 @@ import type {
 	UserFollower,
 	FetchGitHubUsersResult,
 	GitHubUserSearchResponse,
+	UserDetail,
 } from "../types/user";
 
 export const fetchGitHubUsers = async (
@@ -78,5 +79,19 @@ export const fetchUserDetails = async (
 			followers: 0,
 			following: 0,
 		};
+	}
+};
+
+export const fetchUserProfile = async (
+	username: string
+): Promise<UserDetail> => {
+	try {
+		const response = await axios.get<UserDetail>(
+			`${GITHUB_URL}/users/${username}`
+		);
+		return response.data;
+	} catch (error) {
+		console.error("Error fetching profile:", error);
+		throw error;
 	}
 };
