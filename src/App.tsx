@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { UserFollower, GitHubUser, Repo } from "./types/user";
-import { fetchGitHubUsers, fetchUserRepos, fetchUserDetails } from "./api/User";
+import { fetchGitHubUsers, fetchUserRepos, fetchUserDetails } from "./api/user";
 import { GrPrevious, GrNext } from "react-icons/gr";
 import Modal from "./components/UserModal";
 import { useFormik } from "formik";
