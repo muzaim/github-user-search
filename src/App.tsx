@@ -5,10 +5,11 @@ import { GrPrevious, GrNext } from "react-icons/gr";
 import Modal from "./components/UserModal";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { IoLogOutOutline } from "react-icons/io5";
 import { GoRepoForked } from "react-icons/go";
 import { CiStar } from "react-icons/ci";
 import { CiClock1 } from "react-icons/ci";
+import { FaExternalLinkAlt } from "react-icons/fa";
+
 
 export default function App() {
 	const [query] = useState("");
@@ -37,7 +38,6 @@ export default function App() {
 		},
 	});
 
-	// Contoh pemakaian:
 	const getUserDetails = async (username: string) => {
 		const details = await fetchUserDetails(username);
 		return details;
@@ -49,7 +49,6 @@ export default function App() {
 		const normalizedLang = language.toLowerCase();
 		const languageClass = `language-${normalizedLang}`;
 
-		// Check if we have a specific class for this language
 		const validClasses = [
 			"language-javascript",
 			"language-typescript",
@@ -129,28 +128,25 @@ export default function App() {
 
 				<form
 					onSubmit={formik.handleSubmit}
-					className="relative w-full flex flex-col gap-2"
+					className="w-full max-w-lg mx-auto flex flex-col gap-1"
 				>
-					<div className="relative w-full flex">
+					<div className="relative flex rounded-lg shadow-sm overflow-hidden bg-white">
 						<input
 							type="text"
 							name="query"
 							value={formik.values.query}
 							onChange={formik.handleChange}
 							onBlur={formik.handleBlur}
-							placeholder="Type to search..."
-							className={`flex-1 px-4 py-2 rounded-l-lg bg-gray-700 text-white border ${
-								formik.touched.query && formik.errors.query
-									? "border-red-500"
-									: "border-gray-600"
-							} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+							placeholder="Search github username..."
+							className={`flex-1 px-4 py-2 text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all
+        ${formik.touched.query && formik.errors.query ? "ring-red-500 ring-2" : ""}`}
 						/>
 
 						{formik.values.query && (
 							<button
 								type="button"
 								aria-label="Clear search input"
-								className="absolute right-[96px] top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200 cursor-pointer z-10"
+								className="absolute right-[96px] top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
 								onClick={(e) => {
 									e.preventDefault();
 									formik.setFieldValue("query", "");
@@ -158,24 +154,25 @@ export default function App() {
 									setUsers([]);
 								}}
 							>
-								&#x2715;
+								✕
 							</button>
 						)}
 
 						<button
 							type="submit"
-							className="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+							className="bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 transition-colors"
 						>
 							Search
 						</button>
 					</div>
 
+					{/* Error Text */}
 					{formik.touched.query && formik.errors.query && (
-						<p className="text-red-500 text-sm">
-							{formik.errors.query}
-						</p>
+						<p className="text-red-500 text-sm mt-1 ml-1">{formik.errors.query}</p>
 					)}
 				</form>
+
+
 
 				<div className="mt-6 space-y-4">
 					{loadingUsers && (
@@ -249,7 +246,7 @@ export default function App() {
 													</div>
 												</div>
 
-												<button className="mt-4 px-4 py-1 rounded-full bg-blue-500 text-white text-sm hover:bg-blue-600 transition">
+												<button className="mt-4 px-4 py-1 rounded-full bg-blue-500 text-white text-sm hover:bg-blue-600 transition cursor-pointer">
 													View Profile
 												</button>
 											</div>
@@ -342,7 +339,7 @@ export default function App() {
 												className="text-blue-400 hover:underline font-semibold text-lg flex items-center gap-1"
 											>
 												{repo.name}
-												<IoLogOutOutline className="text-blue-400 w-4 h-4" />
+												<FaExternalLinkAlt className="text-blue-400 w-3 h-3" />
 											</a>
 
 											<div className="flex items-center gap-3">

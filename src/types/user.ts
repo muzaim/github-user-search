@@ -17,6 +17,9 @@ export type Repo = {
 	html_url: string;
 	description: string | null;
 	language: string | null;
+	stargazers_count: number;
+	forks_count: number;
+	updated_at: string;
 };
 
 export type UserDetail = {
