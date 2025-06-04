@@ -1,54 +1,92 @@
-# React + TypeScript + Vite
+# GitHub User Search
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Created by Muhammad Syafri Surya Muzaim**
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Project Overview
 
-## Expanding the ESLint configuration
+This project is a GitHub User Search application built with React and Vite. It allows users to search GitHub profiles easily and view relevant information. The app features form validation, responsive design, and seamless data fetching for an optimal user experience.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Features
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Search GitHub users by username  
+- Display search results with user details  
+- Form validation using Formik and Yup  
+- Responsive and modern UI styled with Tailwind CSS  
+- Uses Axios for API requests  
+- Icons provided by React Icons
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## Technologies Used
+
+- React (with Vite)  
+- Tailwind CSS  
+- Formik (for form handling)  
+- Yup (for form validation)  
+- Axios (for HTTP requests)  
+- React Icons (for UI icons)  
+- Vitest (for testing)
+
+---
+
+## Installation
+
+1. Clone the repository:  
+   ```bash
+   git clone <repository-url>
+2. Navigate to the project directory:
+   ```bash
+   cd <project-directory>
+3. Install dependencies:
+   ```bash
+   npm install
+4. Run the development server:
+   ```bash
+   npm run dev
+
+---
+
+## Usage
+
+- Open the app in your browser (usually at http://localhost:5173)
+- Enter a GitHub username in the search input
+- Click the Search button to view user details
+- Use the clear (×) button to reset the search input
+
+## Testing
+1. Running Integration Testing :
+   ```bash
+   npm run test
+2. Running Unit Testing :
+   ```bash
+   npm run test:file src/test/SearchForm.test.jsx
+
+
+## Project Structure
+    public/               # Static assets
+    src/
+    ├── components/       # React components
+    ├── test/             # Test files
+    ├── App.tsx           # Main app component
+    └── main.tsx          # Entry point
+    tailwind.config.js    # Tailwind CSS config
+    vite.config.ts        # Vite config
+    package.json          # Project config and dependencies
+
+---
+## Demo
+https://github-user-search-bay-mu.vercel.app/
+
+## Contributin
+Contributions are welcome! Please open issues or submit pull requests with improvements or bug fixes.
+
+## Contact
+
+1. Muhammad Syafri Surya Muzaim - Fullstack Developer
+2. Email: muzaimsurya16@gmail.com
+3. LinkedIn: https://www.linkedin.com/in/syafri-surya-574369207/
+4. Portfolio: https://syafri-surya.vercel.app/
