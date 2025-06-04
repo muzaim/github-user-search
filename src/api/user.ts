@@ -1,13 +1,6 @@
 import axios from "axios";
 import { GITHUB_TOKEN, GITHUB_URL } from "./config";
-
-export interface GitHubUser {
-	id: number;
-	login: string;
-	avatar_url: string;
-	company: string | null;
-	blog: string | null;
-}
+import type { GitHubUser, Repo } from "../types/user";
 
 interface GitHubUserSearchResponse {
 	items: GitHubUser[];
@@ -53,18 +46,9 @@ export const fetchGitHubUsers = async (
 	}
 };
 
-export interface GitHubRepo {
-	id: number;
-	name: string;
-	html_url: string;
-	description: string | null;
-}
-
-export const fetchUserRepos = async (
-	username: string
-): Promise<GitHubRepo[]> => {
+export const fetchUserRepos = async (username: string): Promise<Repo[]> => {
 	try {
-		const res = await axios.get<GitHubRepo[]>(
+		const res = await axios.get<Repo[]>(
 			`${GITHUB_URL}/users/${username}/repos`,
 			{
 				headers: {

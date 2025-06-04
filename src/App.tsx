@@ -42,7 +42,6 @@ export default function App() {
 	const handleSearch = async (query: string, page: number) => {
 		setLoadingUsers(true);
 		const { users, totalCount } = await fetchGitHubUsers(query, page);
-		console.log(`dandi`, users);
 		setUsers(users);
 		setTotalCount(totalCount);
 		setLoadingUsers(false);
@@ -60,7 +59,6 @@ export default function App() {
 		setLoadingRepos(true);
 
 		const repos = await fetchUserRepos(username);
-		console.log(`dandi repos`, repos);
 		setRepos(repos);
 		setLoadingRepos(false);
 	};
