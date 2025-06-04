@@ -7,7 +7,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 
 export default function App() {
-	const [query, setQuery] = useState("");
+	const [query] = useState("");
 	const [users, setUsers] = useState<GitHubUser[]>([]);
 	const [selectedUser, setSelectedUser] = useState<string>("");
 	const [repos, setRepos] = useState<Repo[]>([]);
@@ -42,6 +42,7 @@ export default function App() {
 	const handleSearch = async (query: string, page: number) => {
 		setLoadingUsers(true);
 		const { users, totalCount } = await fetchGitHubUsers(query, page);
+		console.log(`dandi`, users);
 		setUsers(users);
 		setTotalCount(totalCount);
 		setLoadingUsers(false);
@@ -59,6 +60,7 @@ export default function App() {
 		setLoadingRepos(true);
 
 		const repos = await fetchUserRepos(username);
+		console.log(`dandi repos`, repos);
 		setRepos(repos);
 		setLoadingRepos(false);
 	};

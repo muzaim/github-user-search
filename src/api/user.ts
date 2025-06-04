@@ -4,6 +4,9 @@ import { GITHUB_TOKEN, GITHUB_URL } from "./config";
 export interface GitHubUser {
 	id: number;
 	login: string;
+	avatar_url: string;
+	company: string | null;
+	blog: string | null;
 }
 
 interface GitHubUserSearchResponse {
@@ -53,6 +56,8 @@ export const fetchGitHubUsers = async (
 export interface GitHubRepo {
 	id: number;
 	name: string;
+	html_url: string;
+	description: string | null;
 }
 
 export const fetchUserRepos = async (
