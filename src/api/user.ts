@@ -1,17 +1,11 @@
 import axios from "axios";
 import { GITHUB_TOKEN, GITHUB_URL } from "./config";
-import type { GitHubUser, Repo } from "../types/user";
-
-interface GitHubUserSearchResponse {
-	items: GitHubUser[];
-	total_count: number;
-}
-
-export interface FetchGitHubUsersResult {
-	users: GitHubUser[];
-	totalCount: number;
-	error: unknown | null;
-}
+import type {
+	Repo,
+	UserFollower,
+	FetchGitHubUsersResult,
+	GitHubUserSearchResponse,
+} from "../types/user";
 
 export const fetchGitHubUsers = async (
 	query: string,
@@ -62,11 +56,6 @@ export const fetchUserRepos = async (username: string): Promise<Repo[]> => {
 		return [];
 	}
 };
-
-export interface UserFollower {
-	followers: number;
-	following: number;
-}
 
 export const fetchUserDetails = async (
 	username: string

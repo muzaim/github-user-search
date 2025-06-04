@@ -27,3 +27,14 @@ export type UserDetail = {
 	location: string | null;
 	bio: string | null;
 };
+
+export interface FetchGitHubUsersResult {
+	users: GitHubUser[];
+	totalCount: number;
+	error: unknown | null;
+}
+
+export interface GitHubUserSearchResponse {
+	items: GitHubUser[];
+	total_count: number;
+}
