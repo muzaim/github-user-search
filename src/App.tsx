@@ -9,9 +9,8 @@ import { GoRepoForked } from "react-icons/go";
 import { CiStar } from "react-icons/ci";
 import { CiClock1 } from "react-icons/ci";
 
-
 export default function App() {
-	const [query] = useState("");
+	const [query, setQuery] = useState("");
 	const [users, setUsers] = useState<GitHubUser[]>([]);
 	const [selectedUser, setSelectedUser] = useState<string>("");
 	const [repos, setRepos] = useState<Repo[]>([]);
@@ -34,6 +33,7 @@ export default function App() {
 		onSubmit: (values) => {
 			setPage(1);
 			handleSearch(values.query, 1);
+			setQuery(values.query);
 		},
 	});
 
@@ -138,7 +138,11 @@ export default function App() {
 							onBlur={formik.handleBlur}
 							placeholder="Search github username..."
 							className={`flex-1 px-4 py-2 text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all
-        ${formik.touched.query && formik.errors.query ? "ring-red-500 ring-2" : ""}`}
+        ${
+			formik.touched.query && formik.errors.query
+				? "ring-red-500 ring-2"
+				: ""
+		}`}
 						/>
 
 						{formik.values.query && (
@@ -150,6 +154,7 @@ export default function App() {
 									e.preventDefault();
 									formik.setFieldValue("query", "");
 									formik.setTouched({ query: false });
+									setQuery("");
 									setUsers([]);
 								}}
 							>
@@ -165,13 +170,12 @@ export default function App() {
 						</button>
 					</div>
 
-					{/* Error Text */}
 					{formik.touched.query && formik.errors.query && (
-						<p className="text-red-500 text-sm mt-1 ml-1">{formik.errors.query}</p>
+						<p className="text-red-500 text-sm mt-1 ml-1">
+							{formik.errors.query}
+						</p>
 					)}
 				</form>
-
-
 
 				<div className="mt-6 space-y-4">
 					{loadingUsers && (
@@ -287,11 +291,13 @@ export default function App() {
 						</>
 					)}
 
-					{!loadingUsers && query && users.length === 0 && (
-						<p className="text-gray-400 text-center mt-4">
-							No results for "<strong>{query}</strong>"
-						</p>
-					)}
+					{!loadingUsers &&
+						query.trim() !== "" &&
+						users.length === 0 && (
+							<p className="text-gray-400 text-center mt-4">
+								No results for "<strong>{query}</strong>"
+							</p>
+						)}
 				</div>
 
 				<Modal
@@ -341,15 +347,20 @@ export default function App() {
 													{repo.name}
 												</a>
 												<span
-													className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full border ${repo.visibility === 'public'
-															? 'bg-white text-gray-700 border-gray-300'
-															: 'bg-gray-100 text-gray-600 border-gray-300'
-														}`}
+													className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full border ${
+														repo.visibility ===
+														"public"
+															? "bg-white text-gray-700 border-gray-300"
+															: "bg-gray-100 text-gray-600 border-gray-300"
+													}`}
 												>
-													{repo.visibility.charAt(0).toUpperCase() + repo.visibility.slice(1)}
+													{repo.visibility
+														.charAt(0)
+														.toUpperCase() +
+														repo.visibility.slice(
+															1
+														)}
 												</span>
-
-
 											</div>
 
 											<div className="flex items-center gap-3">
